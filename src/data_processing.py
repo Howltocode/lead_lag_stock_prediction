@@ -1,40 +1,37 @@
+"""
+Stage 2: turn prices into daily returns.
+
+Daily return = (today's price - yesterday's price) / yesterday's price
+Example: price goes 100 -> 102, return = 0.02 (= +2%).
+"""
+
 import pandas as pd
-import os
+
+from src import config
 
 
-def load_stock_data(filepath="data/raw/stock_prices.csv"):
+def load_stock_data(filepath=config.RAW_PRICES_PATH):
+    """Read the saved price CSV (dates as the index)."""
+    return pd.read_csv(filepath, index_col=0, parse_dates=True)
 
-    prices = pd.read_csv(filepath, index_col=0, parse_dates=True)
-
-    return prices
 
 def calculate_daily_return(prices):
-    
-    # Calculate changes between days
+    """Percent change from the previous trading day, for every ticker."""
     returns = prices.pct_change(fill_method=None)
 
-    # Remove first row
-    returns = returns.iloc[1:]
+    # The first row has no "yesterday", so it is empty. Remove it.
+    return returns.iloc[1:]
 
-    return returns
 
-def save_processed_data(data, filepath="data/processed/stock_returns.csv"):
-
-    # Make directory
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-
-    # Save processed data
+def save_processed_data(data, filepath):
+    """Save a DataFrame to CSV, creating the folder if needed."""
+    filepath.parent.mkdir(parents=True, exist_ok=True)
     data.to_csv(filepath)
 
-def process_stock_data(filepath="data/raw/stock_prices.csv"):
-    
-    # Load the data
-    prices = load_stock_data(filepath)
 
-    # Calculate Returns
+def process_stock_data(prices_path=config.RAW_PRICES_PATH, output_path=config.RETURNS_PATH):
+    """Load prices -> calculate returns -> save returns. Returns the returns table."""
+    prices = load_stock_data(prices_path)
     returns = calculate_daily_return(prices)
-
-    # Save Processed Data
-    save_processed_data(returns)
-
+    save_processed_data(returns, output_path)
     return returns
