@@ -14,6 +14,8 @@ from src.data_collection import download_stock_prices
 from src.data_processing import process_stock_data, save_processed_data
 from src.residuals import compute_residual_returns
 from src.lead_lag import run_lead_lag_analysis
+from src.modeling import create_pair_dataset
+
 
 
 def main():
@@ -23,7 +25,11 @@ def main():
 
     # 2. Daily returns
     returns = process_stock_data()
+   
     print("Return data shape:", returns.shape)
+
+    print("First date:", returns.index.min())
+    print("Last date:", returns.index.max())
 
     # 2b. Residual returns (market effect removed)
     residuals, betas = compute_residual_returns(returns)
@@ -31,6 +37,19 @@ def main():
     print("Residual data shape:", residuals.shape)
     print("\nAverage beta of each stock:")
     print(betas.mean().round(2).to_string())
+
+    pair_data = create_pair_dataset(
+        returns,
+        residuals,
+        leader="COP",
+        lagger="BA",
+    )
+
+    print("\nCOP to BA prediction data:")
+    print(pair_data.head())
+
+    print("\nTarget counts:")
+    print(pair_data["target"].value_counts())
 
     # 3. Lead-lag analysis
     #    Leaders use raw returns ("how the stock moved yesterday").
