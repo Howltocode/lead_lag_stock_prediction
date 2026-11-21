@@ -9,8 +9,8 @@ This project investigates whether previous-day movements in leading stocks can h
 1. Collect historical stock-price data ✅
 2. Clean the data and calculate returns ✅ (including residual returns)
 3. Investigate lead-lag correlations ✅
-4. Create machine-learning features and labels
-5. Train and evaluate prediction models
+4. Create machine-learning features and labels ✅
+5. Train and evaluate prediction models ✅
 
 ## Setup and run
 
@@ -32,6 +32,7 @@ src/
   data_processing.py     Stage 2: prices -> daily returns
   residuals.py           Stage 2: daily returns -> residual returns
   lead_lag.py            Stage 3: lead-lag correlation analysis + plots
+  modeling.py            Stage 4: pair datasets and logistic regression
 data/
   raw/stock_prices.csv           Daily closing prices (stocks + SPY)
   processed/stock_returns.csv    Daily returns
@@ -62,8 +63,9 @@ significance flag to avoid counting lucky pairs as real.
 
 | File | What it shows |
 |------|---------------|
-| `lead_lag_correlations.csv` | 10x10 matrix: rows = leader (day t-1), columns = lagger (day t) |
+| `lead_lag_correlations.csv` | Stock pair matrix: rows = leaders (day t-1), columns = laggers (day t) |
 | `lead_lag_pairs.csv` | One row per pair, sorted by strength, with p-values and significance flags |
 | `lead_lag_yearly.csv` | Correlation of the strongest pairs, year by year |
+| `pair_model_results.csv` | Logistic regression results for every stock pair |
 | `figures/lead_lag_heatmap.png` | Heatmap of the correlation matrix |
 | `figures/lead_lag_yearly.png` | Stability of the strongest pairs over time |

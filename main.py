@@ -14,7 +14,7 @@ from src.data_collection import download_stock_prices
 from src.data_processing import process_stock_data, save_processed_data
 from src.residuals import compute_residual_returns
 from src.lead_lag import run_lead_lag_analysis
-from src.modeling import create_pair_dataset
+from src.modeling import train_all_pair_models
 
 
 
@@ -38,18 +38,27 @@ def main():
     print("\nAverage beta of each stock:")
     print(betas.mean().round(2).to_string())
 
-    pair_data = create_pair_dataset(
+    pair_models, pair_results = train_all_pair_models(
         returns,
         residuals,
-        leader="COP",
-        lagger="BA",
+        config.TICKERS,
     )
 
-    print("\nCOP to BA prediction data:")
-    print(pair_data.head())
-
-    print("\nTarget counts:")
-    print(pair_data["target"].value_counts())
+    config.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    pair_results_path = config.RESULTS_DIR / "pair_model_results.csv"
+    pair_results.to_csv(pair_results_path, index=False)
+    print("\nTrained stock-pair models:", len(pair_models))
+    print("Mean test accuracy:", round(pair_results["model_accuracy"].mean(), 4))
+    print("Mean test ROC-AUC:", round(pair_results["model_auc"].mean(), 4))
+    different_stock_results = pair_results[~pair_results["same_stock"]]
+    print("Different-stock pairs beating majority baseline:",
+          int((different_stock_results["model_accuracy"] >
+               different_stock_results["baseline_accuracy"]).sum()))
+    print("\nBest logistic regression stock pairs:")
+    print(pair_results[~pair_results["same_stock"]][[
+        "leader", "lagger", "model_accuracy", "model_auc",
+        "baseline_accuracy",
+    ]].head(10).round(4).to_string(index=False))
 
     # 3. Lead-lag analysis
     #    Leaders use raw returns ("how the stock moved yesterday").
