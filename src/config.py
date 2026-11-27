@@ -147,6 +147,14 @@ TREE_MAX_DEPTH = 1
 N_CLUSTERS = 3
 N_CLUSTERS_FINE = 8
 
+# Names we gave the k = 3 clusters after looking at their members
+# (cluster numbers are ordered by their most common sector).
+CLUSTER_NAMES = {
+    1: "Cyclicals (energy, banks, industrials)",
+    2: "Defensives (health care, staples, retail)",
+    3: "Growth / tech",
+}
+
 # ---------------------------------------------------------------------------
 # File paths
 # ---------------------------------------------------------------------------

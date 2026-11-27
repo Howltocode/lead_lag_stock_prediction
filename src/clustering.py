@@ -147,6 +147,70 @@ def plot_choose_k(scores, chosen_k, filepath):
     plt.close(fig)
 
 
+CLUSTER_COLORS = ["#257de0", "#f47230", "#00b894", "#f2a600", "#ee7fac",
+                  "#008a17", "#6a4ce2", "#ec4647"]
+
+
+def _label_points(ax, fig, names, points):
+    """
+    Put a ticker label next to every dot, trying a few positions around the
+    dot and taking the first one that does not overlap a label already placed.
+    """
+    candidates = [(5, 4), (5, -11), (-6, 4), (-6, -11), (5, 13), (-6, 13),
+                  (5, -20), (-6, -20)]
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    placed = []
+    for name, (x, y) in zip(names, points):
+        for dx, dy in candidates:
+            label = ax.annotate(name, (x, y), xytext=(dx, dy), textcoords="offset points",
+                                ha="left" if dx > 0 else "right", fontsize=8, color=TEXT)
+            box = label.get_window_extent(renderer).expanded(1.05, 1.1)
+            if not any(box.overlaps(other) for other in placed):
+                placed.append(box)
+                break
+            label.remove()
+        else:  # every position was taken: keep the default one
+            ax.annotate(name, (x, y), xytext=(5, 4), textcoords="offset points",
+                        fontsize=8, color=TEXT)
+
+
+def plot_cluster_scatter(correlations, labels, filepath, cluster_names=None):
+    """
+    Every stock as a dot, colored by K-means cluster.
+
+    Each stock is really a 49-number vector, so we use PCA to squash it to
+    2 numbers just for drawing. PCA does not change the clusters; it only
+    picks the 2 directions that keep the most spread between the stocks.
+    """
+    from sklearn.decomposition import PCA
+
+    pca = PCA(n_components=2, random_state=SEED)
+    points = pca.fit_transform(correlations.values)
+    explained = pca.explained_variance_ratio_
+
+    fig, ax = plt.subplots(figsize=(9, 7))
+    for number, color in zip(sorted(labels.unique()), CLUSTER_COLORS):
+        mask = (labels == number).values
+        name = (cluster_names or {}).get(number, f"Cluster {number}")
+        ax.scatter(points[mask, 0], points[mask, 1], s=70, color=color,
+                   edgecolor="white", linewidth=1.5, label=name, zorder=3)
+
+    _label_points(ax, fig, correlations.index, points)
+
+    ax.set_xlabel(f"PCA component 1 ({explained[0]:.0%} of variance)", color=TEXT)
+    ax.set_ylabel(f"PCA component 2 ({explained[1]:.0%} of variance)", color=TEXT)
+    ax.set_title(f"Stocks clustered by residual-return correlation "
+                 f"(K-means, k = {labels.nunique()})", color=TEXT, loc="left")
+    ax.legend(frameon=False, fontsize=9, loc="best")
+    _style(ax)
+
+    fig.tight_layout()
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(filepath, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
 def plot_clustered_heatmap(correlations, labels, sectors, filepath, fine_labels=None):
     """
     Residual-return correlation matrix with stocks ordered by cluster.
@@ -210,6 +274,8 @@ def run_clustering(residuals, cutoff, dev_pairs, tables_dir, figures_dir,
     table = cluster_table({f"cluster_k{kk}": lab for kk, lab in labels.items()}, sectors)
     table.to_csv(tables_dir / "clusters.csv")
 
+    plot_cluster_scatter(correlations, labels[k], figures_dir / "cluster_scatter.png",
+                         cluster_names=config.CLUSTER_NAMES if k == 3 else None)
     plot_clustered_heatmap(correlations, labels[k], sectors,
                            figures_dir / "cluster_heatmap.png", fine_labels=labels[fine_k])
 
