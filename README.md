@@ -33,6 +33,12 @@ src/
   residuals.py           Stage 2: daily returns -> residual returns
   lead_lag.py            Stage 3: lead-lag correlation analysis + plots
   modeling.py            Stage 4: pair datasets and logistic regression
+  validation.py          Stage 5b: walk-forward folds + final holdout split
+  evaluation.py          Stage 5c: score a model on folds and the holdout
+  model_comparison.py    Stage 5d: pair selection + 5-model comparison
+  evaluation_plots.py    Stage 5d: depth curve, confusion matrices, ROC
+  clustering.py          Stage 6: K-means clustering of stocks
+run_evaluation.py        Walk-forward evaluation (run after main.py)
 data/
   raw/stock_prices.csv           Daily closing prices (stocks + SPY)
   processed/stock_returns.csv    Daily returns
@@ -41,6 +47,36 @@ results/                 Created when you run main.py (tables + figures)
 ```
 
 To change the stock list, dates, or other settings, edit `src/config.py`.
+If you move `START_DATE` earlier, prices are downloaded again automatically.
+
+## Walk-forward evaluation
+
+```bash
+python run_evaluation.py
+```
+
+This reuses the same pair dataset as `modeling.py` (leader's previous-day
+return -> lagger's residual direction today) and only changes how models are
+selected and tested:
+
+1. **Holdout.** One cutoff date splits the data. The most recent 20% of days
+   is the holdout test, used once at the very end.
+2. **Pair selection without look-ahead.** The Stage 3 correlation test is
+   rerun on the development period only, and the different-stock pairs that
+   pass Bonferroni are kept.
+3. **Walk-forward validation.** Train on ~3 years, validate on the next year,
+   add that year to training, validate on the following year, and so on. A
+   shuffled k-fold is not used because it would train on the future.
+4. **Models.** Logistic regression, SVM (RBF), decision tree, random forest,
+   and a small neural network (MLP) on every selected pair. The tree depth is
+   chosen from the train-vs-validation depth curve (`TREE_MAX_DEPTH`).
+
+5. **Clustering.** K-means groups the stocks by their residual-return
+   correlations (development period only). k is chosen with the elbow and
+   silhouette plots; the clusters are then compared with the real sectors,
+   which the clustering never sees.
+
+Tables go to `results/evaluation/`, figures to `results/figures/evaluation/`.
 
 ## Key ideas
 

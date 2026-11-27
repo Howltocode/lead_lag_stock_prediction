@@ -23,11 +23,22 @@ def download_stock_prices(tickers, start=config.START_DATE, end=config.END_DATE,
         saved = pd.read_csv(filepath, index_col=0, parse_dates=True)
         missing = [t for t in tickers if t not in saved.columns]
 
-        if not missing:
+        # If START_DATE was moved earlier, the saved file is too short.
+        # (A few days of slack covers weekends/holidays after the start date.)
+        starts_too_late = (
+            start is not None
+            and saved.index.min() > pd.Timestamp(start) + pd.Timedelta(days=7)
+        )
+
+        if not missing and not starts_too_late:
             print(f"Using saved prices from {filepath}")
             return saved[tickers]
 
-        print(f"Saved prices are missing {missing}, downloading again...")
+        if missing:
+            print(f"Saved prices are missing {missing}, downloading again...")
+        else:
+            print(f"Saved prices start on {saved.index.min().date()}, "
+                  f"after START_DATE {start}, downloading again...")
 
     data = yf.download(
         tickers=tickers,

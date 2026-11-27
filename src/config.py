@@ -65,6 +65,29 @@ TICKERS = [
     "PLTR",
 ]
 
+# GICS sector of each stock. Only used to check the clustering results
+# (the clustering itself never sees these labels).
+SECTORS = {
+    "AAPL": "Tech", "MSFT": "Tech", "NVDA": "Tech", "AVGO": "Tech",
+    "AMD": "Tech", "ORCL": "Tech", "CRM": "Tech", "ADBE": "Tech",
+    "CSCO": "Tech", "QCOM": "Tech", "INTC": "Tech", "IBM": "Tech",
+    "PLTR": "Tech",
+    "GOOGL": "Communication", "META": "Communication",
+    "NFLX": "Communication", "DIS": "Communication",
+    "AMZN": "Consumer Disc.", "HD": "Consumer Disc.", "MCD": "Consumer Disc.",
+    "SBUX": "Consumer Disc.", "NKE": "Consumer Disc.",
+    "WMT": "Consumer Staples", "COST": "Consumer Staples",
+    "KO": "Consumer Staples", "PEP": "Consumer Staples",
+    "JPM": "Financials", "BAC": "Financials", "GS": "Financials",
+    "MS": "Financials", "V": "Financials", "WFC": "Financials",
+    "JNJ": "Health Care", "UNH": "Health Care", "PFE": "Health Care",
+    "ABBV": "Health Care", "MRK": "Health Care", "LLY": "Health Care",
+    "TMO": "Health Care", "AMGN": "Health Care",
+    "XOM": "Energy", "CVX": "Energy", "COP": "Energy",
+    "CAT": "Industrials", "DE": "Industrials", "GE": "Industrials",
+    "HON": "Industrials", "BA": "Industrials", "UPS": "Industrials",
+}
+
 # The "market" we compare every stock against when computing residual returns.
 # SPY is an ETF that tracks the S&P 500, so it is a common stand-in for
 # "how the whole market moved today".
@@ -97,6 +120,40 @@ BETA_WINDOW = 60
 # Significance level for the correlation tests (before the multiple-testing
 # correction described in lead_lag.py).
 ALPHA = 0.05
+
+# ---------------------------------------------------------------------------
+# Model evaluation settings (walk-forward validation, see validation.py)
+# ---------------------------------------------------------------------------
+
+# The most recent share of the data kept as a final holdout test.
+# It is used exactly once, after all model choices are made.
+HOLDOUT_FRACTION = 0.20
+
+# Walk-forward folds inside the development part (in trading days).
+# ~252 trading days = 1 year.
+INITIAL_TRAIN_DAYS = 756   # first training window: ~3 years
+VALIDATION_DAYS = 252      # each validation block: ~1 year
+
+# Decision tree depths tried in the train-vs-validation curve.
+TREE_DEPTHS = [1, 2, 3, 4, 6, 8, 12, 16]
+
+# Depth used for the decision tree and random forest in the comparison.
+# Set this from the depth curve: the depth with the best validation accuracy.
+TREE_MAX_DEPTH = 1
+
+# K-means clustering of stocks (clustering.py). Both the elbow and the
+# silhouette score point to k = 3, so that is the main result. k = 8 (a
+# smaller second silhouette peak) is kept as a finer, sector-level view.
+N_CLUSTERS = 3
+N_CLUSTERS_FINE = 8
+
+# Names we gave the k = 3 clusters after looking at their members
+# (cluster numbers are ordered by their most common sector).
+CLUSTER_NAMES = {
+    1: "Cyclicals (energy, banks, industrials)",
+    2: "Defensives (health care, staples, retail)",
+    3: "Growth / tech",
+}
 
 # ---------------------------------------------------------------------------
 # File paths
