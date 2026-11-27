@@ -65,6 +65,29 @@ TICKERS = [
     "PLTR",
 ]
 
+# GICS sector of each stock. Only used to check the clustering results
+# (the clustering itself never sees these labels).
+SECTORS = {
+    "AAPL": "Tech", "MSFT": "Tech", "NVDA": "Tech", "AVGO": "Tech",
+    "AMD": "Tech", "ORCL": "Tech", "CRM": "Tech", "ADBE": "Tech",
+    "CSCO": "Tech", "QCOM": "Tech", "INTC": "Tech", "IBM": "Tech",
+    "PLTR": "Tech",
+    "GOOGL": "Communication", "META": "Communication",
+    "NFLX": "Communication", "DIS": "Communication",
+    "AMZN": "Consumer Disc.", "HD": "Consumer Disc.", "MCD": "Consumer Disc.",
+    "SBUX": "Consumer Disc.", "NKE": "Consumer Disc.",
+    "WMT": "Consumer Staples", "COST": "Consumer Staples",
+    "KO": "Consumer Staples", "PEP": "Consumer Staples",
+    "JPM": "Financials", "BAC": "Financials", "GS": "Financials",
+    "MS": "Financials", "V": "Financials", "WFC": "Financials",
+    "JNJ": "Health Care", "UNH": "Health Care", "PFE": "Health Care",
+    "ABBV": "Health Care", "MRK": "Health Care", "LLY": "Health Care",
+    "TMO": "Health Care", "AMGN": "Health Care",
+    "XOM": "Energy", "CVX": "Energy", "COP": "Energy",
+    "CAT": "Industrials", "DE": "Industrials", "GE": "Industrials",
+    "HON": "Industrials", "BA": "Industrials", "UPS": "Industrials",
+}
+
 # The "market" we compare every stock against when computing residual returns.
 # SPY is an ETF that tracks the S&P 500, so it is a common stand-in for
 # "how the whole market moved today".
@@ -117,6 +140,11 @@ TREE_DEPTHS = [1, 2, 3, 4, 6, 8, 12, 16]
 # Depth used for the decision tree and random forest in the comparison.
 # Set this from the depth curve: the depth with the best validation accuracy.
 TREE_MAX_DEPTH = 1
+
+# K-means clustering of stocks (clustering.py). Silhouette is highest at
+# k = 3 (broad style groups) and has a second peak at k = 8 (sector level).
+N_CLUSTERS = 8
+N_CLUSTERS_COARSE = 3
 
 # ---------------------------------------------------------------------------
 # File paths

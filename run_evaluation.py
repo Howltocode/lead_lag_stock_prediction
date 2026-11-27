@@ -12,11 +12,13 @@ Steps (details in src/model_comparison.py):
   3. Decision tree depth curve (walk-forward, development period only)
   4. Five models on every selected pair: walk-forward, then holdout once
   5. Tables in results/evaluation/, figures in results/figures/evaluation/
+  6. K-means clustering of stocks on residual correlations (clustering.py)
 """
 
 import pandas as pd
 
 from src import config
+from src.clustering import run_clustering
 from src.evaluation_plots import (plot_confusion_matrices, plot_roc_curves,
                                   plot_tree_depth_curve)
 from src.model_comparison import (compare_models, get_models, select_pairs,
@@ -74,6 +76,17 @@ def main():
     plot_confusion_matrices(holdout_predictions, names,
                             FIGURES_DIR / "confusion_matrices.png")
     plot_roc_curves(holdout_predictions, names, FIGURES_DIR / "roc_curves.png")
+    # 6. Clustering
+    _, clusters, by_cluster, purity = run_clustering(
+        residuals, cutoff, all_dev_pairs, TABLES_DIR, FIGURES_DIR)
+    print(f"\nK-means clusters (k = {config.N_CLUSTERS}):")
+    for number, members in clusters.groupby(f"cluster_k{config.N_CLUSTERS}"):
+        print(f"  {number}: " + ", ".join(
+            f"{t} ({s})" for t, s in zip(members.index, members["sector"])))
+    print("Sector purity: " + ", ".join(f"k={k}: {v:.0%}" for k, v in purity.items()))
+    print("\nLead-lag strength inside vs across clusters:")
+    print(by_cluster.round(4).to_string(index=False))
+
     print(f"\nTables saved in {TABLES_DIR}\nFigures saved in {FIGURES_DIR}")
 
 

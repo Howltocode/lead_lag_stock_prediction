@@ -1,0 +1,3 @@
+same_cluster,pairs,mean_abs_correlation,bonferroni_pairs
+False,2070,0.03243873599638015,27
+True,282,0.03130913058317142,2

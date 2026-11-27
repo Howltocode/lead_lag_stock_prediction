@@ -37,6 +37,7 @@ src/
   evaluation.py          Stage 5c: score a model on folds and the holdout
   model_comparison.py    Stage 5d: pair selection + 5-model comparison
   evaluation_plots.py    Stage 5d: depth curve, confusion matrices, ROC
+  clustering.py          Stage 6: K-means clustering of stocks
 run_evaluation.py        Walk-forward evaluation (run after main.py)
 data/
   raw/stock_prices.csv           Daily closing prices (stocks + SPY)
@@ -69,6 +70,11 @@ selected and tested:
 4. **Models.** Logistic regression, SVM (RBF), decision tree, random forest,
    and a small neural network (MLP) on every selected pair. The tree depth is
    chosen from the train-vs-validation depth curve (`TREE_MAX_DEPTH`).
+
+5. **Clustering.** K-means groups the stocks by their residual-return
+   correlations (development period only). k is chosen with the elbow and
+   silhouette plots; the clusters are then compared with the real sectors,
+   which the clustering never sees.
 
 Tables go to `results/evaluation/`, figures to `results/figures/evaluation/`.
 
