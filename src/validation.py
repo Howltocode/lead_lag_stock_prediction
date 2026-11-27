@@ -45,6 +45,25 @@ class Fold:
     validation: np.ndarray
 
 
+def holdout_cutoff_date(index, holdout_fraction=config.HOLDOUT_FRACTION):
+    """
+    First date of the holdout period: the last `holdout_fraction` of `index`.
+
+    Using one shared DATE (not a row count) keeps the holdout period the same
+    for every stock pair, even pairs with a shorter history (e.g. PLTR).
+    """
+    if not 0 < holdout_fraction < 1:
+        raise ValueError("holdout_fraction must be between 0 and 1")
+    return index[int(len(index) * (1 - holdout_fraction))]
+
+
+def split_by_date(index, cutoff):
+    """Row positions before `cutoff` (development) and from `cutoff` on (holdout)."""
+    positions = np.arange(len(index))
+    is_holdout = index >= cutoff
+    return positions[~is_holdout], positions[is_holdout]
+
+
 def split_holdout(n_rows, holdout_fraction=config.HOLDOUT_FRACTION):
     """
     Split row positions 0..n_rows-1 into development and holdout parts.

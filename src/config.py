@@ -102,10 +102,6 @@ ALPHA = 0.05
 # Model evaluation settings (walk-forward validation, see validation.py)
 # ---------------------------------------------------------------------------
 
-# Laggers we build multi-leader models for. These are the laggers of the
-# strongest Bonferroni-significant pairs from the lead-lag analysis.
-EVAL_LAGGERS = ["BA", "MSFT", "AMZN", "INTC", "AVGO"]
-
 # The most recent share of the data kept as a final holdout test.
 # It is used exactly once, after all model choices are made.
 HOLDOUT_FRACTION = 0.20
@@ -114,6 +110,13 @@ HOLDOUT_FRACTION = 0.20
 # ~252 trading days = 1 year.
 INITIAL_TRAIN_DAYS = 756   # first training window: ~3 years
 VALIDATION_DAYS = 252      # each validation block: ~1 year
+
+# Decision tree depths tried in the train-vs-validation curve.
+TREE_DEPTHS = [1, 2, 3, 4, 6, 8, 12, 16]
+
+# Depth used for the decision tree and random forest in the comparison.
+# Set this from the depth curve: the depth with the best validation accuracy.
+TREE_MAX_DEPTH = 1
 
 # ---------------------------------------------------------------------------
 # File paths

@@ -33,9 +33,10 @@ src/
   residuals.py           Stage 2: daily returns -> residual returns
   lead_lag.py            Stage 3: lead-lag correlation analysis + plots
   modeling.py            Stage 4: pair datasets and logistic regression
-  features.py            Stage 4b: multi-leader dataset for one lagger
   validation.py          Stage 5b: walk-forward folds + final holdout split
   evaluation.py          Stage 5c: score a model on folds and the holdout
+  model_comparison.py    Stage 5d: pair selection + 5-model comparison
+  evaluation_plots.py    Stage 5d: depth curve, confusion matrices, ROC
 run_evaluation.py        Walk-forward evaluation (run after main.py)
 data/
   raw/stock_prices.csv           Daily closing prices (stocks + SPY)
@@ -53,17 +54,23 @@ If you move `START_DATE` earlier, prices are downloaded again automatically.
 python run_evaluation.py
 ```
 
-For each lagger in `config.EVAL_LAGGERS`, the features are the previous-day
-returns of every other stock, the previous-day SPY return, and the lagger's
-own previous-day residual. The target is whether the lagger's residual
-return today is positive.
+This reuses the same pair dataset as `modeling.py` (leader's previous-day
+return -> lagger's residual direction today) and only changes how models are
+selected and tested:
 
-The data is split by date. The most recent 20% is a holdout test, used only
-once at the end. The rest is used for expanding-window walk-forward
-validation: train on ~3 years, validate on the next year, then add that year
-to training and validate on the following year, and so on. A normal shuffled
-k-fold is not used because it would train on the future. Results are saved
-in `results/evaluation/`.
+1. **Holdout.** One cutoff date splits the data. The most recent 20% of days
+   is the holdout test, used once at the very end.
+2. **Pair selection without look-ahead.** The Stage 3 correlation test is
+   rerun on the development period only, and the different-stock pairs that
+   pass Bonferroni are kept.
+3. **Walk-forward validation.** Train on ~3 years, validate on the next year,
+   add that year to training, validate on the following year, and so on. A
+   shuffled k-fold is not used because it would train on the future.
+4. **Models.** Logistic regression, SVM (RBF), decision tree, random forest,
+   and a small neural network (MLP) on every selected pair. The tree depth is
+   chosen from the train-vs-validation depth curve (`TREE_MAX_DEPTH`).
+
+Tables go to `results/evaluation/`, figures to `results/figures/evaluation/`.
 
 ## Key ideas
 

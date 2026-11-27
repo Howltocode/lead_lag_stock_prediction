@@ -42,6 +42,9 @@ def fit_and_score(model, X, y, train_rows, eval_rows):
     probabilities = fitted.predict_proba(X_eval)[:, 1]
 
     metrics = score_predictions(y_eval, predictions, probabilities, y_train)
+    # Accuracy on the data the model was fit on. A big gap between this and
+    # the evaluation accuracy is the sign of overfitting.
+    metrics["train_accuracy"] = accuracy_score(y_train, fitted.predict(X_train))
     metrics["train_days"] = len(train_rows)
     metrics["eval_days"] = len(eval_rows)
 
