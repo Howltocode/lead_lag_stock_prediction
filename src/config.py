@@ -99,6 +99,23 @@ BETA_WINDOW = 60
 ALPHA = 0.05
 
 # ---------------------------------------------------------------------------
+# Model evaluation settings (walk-forward validation, see validation.py)
+# ---------------------------------------------------------------------------
+
+# Laggers we build multi-leader models for. These are the laggers of the
+# strongest Bonferroni-significant pairs from the lead-lag analysis.
+EVAL_LAGGERS = ["BA", "MSFT", "AMZN", "INTC", "AVGO"]
+
+# The most recent share of the data kept as a final holdout test.
+# It is used exactly once, after all model choices are made.
+HOLDOUT_FRACTION = 0.20
+
+# Walk-forward folds inside the development part (in trading days).
+# ~252 trading days = 1 year.
+INITIAL_TRAIN_DAYS = 756   # first training window: ~3 years
+VALIDATION_DAYS = 252      # each validation block: ~1 year
+
+# ---------------------------------------------------------------------------
 # File paths
 # ---------------------------------------------------------------------------
 

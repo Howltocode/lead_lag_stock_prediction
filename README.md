@@ -33,6 +33,10 @@ src/
   residuals.py           Stage 2: daily returns -> residual returns
   lead_lag.py            Stage 3: lead-lag correlation analysis + plots
   modeling.py            Stage 4: pair datasets and logistic regression
+  features.py            Stage 4b: multi-leader dataset for one lagger
+  validation.py          Stage 5b: walk-forward folds + final holdout split
+  evaluation.py          Stage 5c: score a model on folds and the holdout
+run_evaluation.py        Walk-forward evaluation (run after main.py)
 data/
   raw/stock_prices.csv           Daily closing prices (stocks + SPY)
   processed/stock_returns.csv    Daily returns
@@ -41,6 +45,25 @@ results/                 Created when you run main.py (tables + figures)
 ```
 
 To change the stock list, dates, or other settings, edit `src/config.py`.
+If you move `START_DATE` earlier, prices are downloaded again automatically.
+
+## Walk-forward evaluation
+
+```bash
+python run_evaluation.py
+```
+
+For each lagger in `config.EVAL_LAGGERS`, the features are the previous-day
+returns of every other stock, the previous-day SPY return, and the lagger's
+own previous-day residual. The target is whether the lagger's residual
+return today is positive.
+
+The data is split by date. The most recent 20% is a holdout test, used only
+once at the end. The rest is used for expanding-window walk-forward
+validation: train on ~3 years, validate on the next year, then add that year
+to training and validate on the following year, and so on. A normal shuffled
+k-fold is not used because it would train on the future. Results are saved
+in `results/evaluation/`.
 
 ## Key ideas
 
