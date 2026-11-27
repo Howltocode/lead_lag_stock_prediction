@@ -147,12 +147,15 @@ def plot_choose_k(scores, chosen_k, filepath):
     plt.close(fig)
 
 
-def plot_clustered_heatmap(correlations, labels, sectors, filepath):
+def plot_clustered_heatmap(correlations, labels, sectors, filepath, fine_labels=None):
     """
     Residual-return correlation matrix with stocks ordered by cluster.
     Stocks that move together form blocks along the diagonal.
+    Lines mark the main clusters; inside each one, stocks are ordered by the
+    finer clustering (if given) so smaller blocks are visible too.
     """
-    order = sorted(labels.index, key=lambda t: (labels[t], sectors[t], t))
+    fine = fine_labels if fine_labels is not None else labels
+    order = sorted(labels.index, key=lambda t: (labels[t], fine[t], sectors[t], t))
     matrix = correlations.loc[order, order].values.copy()
     np.fill_diagonal(matrix, np.nan)  # self-correlation (1.0) would dominate the scale
     limit = np.nanmax(np.abs(matrix))
@@ -190,7 +193,7 @@ def plot_clustered_heatmap(correlations, labels, sectors, filepath):
 # ---------------------------------------------------------------------------
 
 def run_clustering(residuals, cutoff, dev_pairs, tables_dir, figures_dir,
-                   k=config.N_CLUSTERS, coarse_k=config.N_CLUSTERS_COARSE,
+                   k=config.N_CLUSTERS, fine_k=config.N_CLUSTERS_FINE,
                    sectors=config.SECTORS):
     """Stage 6: choose k, cluster, compare with sectors, save tables and figures."""
     correlations = residual_correlations(residuals, cutoff)
@@ -200,7 +203,7 @@ def run_clustering(residuals, cutoff, dev_pairs, tables_dir, figures_dir,
     plot_choose_k(scores, k, figures_dir / "cluster_choose_k.png")
 
     labels = {}
-    for kk in (coarse_k, k):
+    for kk in (k, fine_k):
         raw, _ = fit_kmeans(correlations, kk)
         labels[kk] = renumber_by_sector(raw, sectors)
 
@@ -208,7 +211,7 @@ def run_clustering(residuals, cutoff, dev_pairs, tables_dir, figures_dir,
     table.to_csv(tables_dir / "clusters.csv")
 
     plot_clustered_heatmap(correlations, labels[k], sectors,
-                           figures_dir / "cluster_heatmap.png")
+                           figures_dir / "cluster_heatmap.png", fine_labels=labels[fine_k])
 
     by_cluster = lead_lag_by_cluster(dev_pairs, labels[k])
     by_cluster.to_csv(tables_dir / "lead_lag_by_cluster.csv", index=False)

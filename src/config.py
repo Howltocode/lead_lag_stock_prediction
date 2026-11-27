@@ -141,10 +141,11 @@ TREE_DEPTHS = [1, 2, 3, 4, 6, 8, 12, 16]
 # Set this from the depth curve: the depth with the best validation accuracy.
 TREE_MAX_DEPTH = 1
 
-# K-means clustering of stocks (clustering.py). Silhouette is highest at
-# k = 3 (broad style groups) and has a second peak at k = 8 (sector level).
-N_CLUSTERS = 8
-N_CLUSTERS_COARSE = 3
+# K-means clustering of stocks (clustering.py). Both the elbow and the
+# silhouette score point to k = 3, so that is the main result. k = 8 (a
+# smaller second silhouette peak) is kept as a finer, sector-level view.
+N_CLUSTERS = 3
+N_CLUSTERS_FINE = 8
 
 # ---------------------------------------------------------------------------
 # File paths
